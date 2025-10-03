@@ -26,7 +26,7 @@ export default function Header() {
 						</div>
 						<div>
 							<h1 className="text-2xl font-bold text-white bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text">
-								CleanSky Dashboard
+								WeaZer Odds Dashboard
 							</h1>
 							<p className="text-sm text-slate-400">
 								NASA Space Apps Challenge
