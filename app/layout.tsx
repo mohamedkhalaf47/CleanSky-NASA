@@ -4,7 +4,7 @@ import Header from "../components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-	title: "CleanSky",
+	title: "WeaZer Odds",
 	description: "Weather and Air Quality Explorer with NASA Satellite Data",
 };
 
