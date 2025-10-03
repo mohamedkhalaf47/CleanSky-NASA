@@ -33,7 +33,7 @@ export const getForecastWeather = async (
 	longitude: number
 ): Promise<ForecastResponse> => {
 	const response = await fetch(
-		`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weather_code&timezone=auto`
+		`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weather_code&forecast_days=14&timezone=auto`
 	);
 
 	if (!response.ok) throw new Error("Forecast fetch failed");
@@ -79,7 +79,7 @@ export const reverseGeocode = async (
 				country: data.address?.country || "Unknown",
 			};
 		}
-	} catch (error:unknown) {
+	} catch (error: unknown) {
 		console.warn("Reverse geocoding failed", error);
 	}
 	return null;

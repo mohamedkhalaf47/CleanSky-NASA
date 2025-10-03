@@ -59,3 +59,13 @@ export interface LocationData {
 	name?: string;
 	country?: string;
 }
+
+export interface ForecastDay {
+	date: string;
+	tempMax: number;
+	tempMin: number;
+	precipitation: number;
+	windSpeed: number;
+	weatherCode: number;
+	description: string;
+}
