@@ -8,7 +8,6 @@ interface WeatherCardProps {
 }
 
 export default function WeatherCard({
-	temperature,
 	humidity,
 	windSpeed,
 	precipitation,
