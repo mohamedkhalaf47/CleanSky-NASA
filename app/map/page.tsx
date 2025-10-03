@@ -1,14 +1,16 @@
 "use client";
+import "../leaflet/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
+import "leaflet-defaulticon-compatibility";
 import { useState } from "react";
 import {
 	MapContainer,
 	TileLayer,
 	Marker,
 	Popup,
-	useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
-import { MapPin, Download, Satellite } from "lucide-react";
+import { MapPin } from "lucide-react";
 import {
 	getCurrentWeather,
 	getAirQuality,
@@ -18,6 +20,10 @@ import { exportToCSV } from "../../utils/weatherHelpers";
 import { LocationData } from "../../types/weather";
 import WeatherCard from "../../components/WeatherCard";
 import AirQualityCard from "../../components/AirQualityCard";
+import MapExplorerHeader from "@/components/map/MapExplorerHeader";
+import MapHeader from "@/components/map/MapHeader";
+import MapController from "@/components/map/MapController";
+import LocationStats from "@/components/map/LocationStats";
 
 interface ExtendedIconPrototype extends L.Icon.Default {
 	_getIconUrl?: string;
@@ -43,19 +49,6 @@ interface WeatherData {
 		pm10?: number;
 		pm2_5?: number;
 	};
-}
-
-function MapClickHandler({
-	onLocationSelect,
-}: {
-	onLocationSelect: (lat: number, lng: number) => void;
-}) {
-	useMapEvents({
-		click: (e) => {
-			onLocationSelect(e.latlng.lat, e.latlng.lng);
-		},
-	});
-	return null;
 }
 
 export default function Page() {
@@ -126,37 +119,14 @@ export default function Page() {
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 			<section className="bg-slate-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-slate-800/50">
-				<div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-					<div className="flex items-center gap-3">
-						<div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
-							<MapPin className="w-6 h-6 text-white" />
-						</div>
-						<div>
-							<h2 className="text-2xl font-bold text-white">Map Explorer</h2>
-							<p className="text-slate-400 text-sm">
-								Click anywhere on the map to get weather data
-							</p>
-						</div>
-					</div>
-
-					{weatherData && (
-						<button
-							onClick={handleExportCSV}
-							className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-						>
-							<Download className="w-4 h-4" />
-							Export CSV
-						</button>
-					)}
-				</div>
+				<MapExplorerHeader hasData={!!weatherData} onExport={handleExportCSV} />
 
 				<div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
 					<p className="text-slate-300 text-sm flex items-start gap-2">
 						<MapPin className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
 						<span>
 							Click or tap any location on the map to view current weather
-							conditions. The data includes temperature, humidity, wind speed,
-							and air quality information.
+							conditions.
 						</span>
 					</p>
 				</div>
@@ -165,29 +135,11 @@ export default function Page() {
 			<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 				<div className="xl:col-span-2">
 					<div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-slate-800/50">
-						<div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-4 flex items-center justify-between flex-wrap gap-3">
-							<div className="flex items-center gap-3">
-								<MapPin className="w-6 h-6 text-white" aria-hidden="true" />
-								<div>
-									<h3 className="text-white font-bold text-lg">
-										Interactive Map
-									</h3>
-									<p className="text-cyan-100 text-sm">
-										{isLoading ? "Loading weather data..." : "Click to explore"}
-									</p>
-								</div>
-							</div>
-							<button
-								onClick={() => setShowGIBS(!showGIBS)}
-								className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-colors backdrop-blur-sm flex items-center gap-2"
-								aria-label={
-									showGIBS ? "Hide satellite imagery" : "Show satellite imagery"
-								}
-							>
-								<Satellite className="w-4 h-4" aria-hidden="true" />
-								{showGIBS ? "Hide Satellite" : "Show Satellite"}
-							</button>
-						</div>
+						<MapHeader
+							showGIBS={showGIBS}
+							onToggleGIBS={() => setShowGIBS(!showGIBS)}
+							isLoading={isLoading}
+						/>
 
 						<MapContainer
 							center={[20, 0]}
@@ -211,7 +163,7 @@ export default function Page() {
 								/>
 							)}
 
-							<MapClickHandler onLocationSelect={handleLocationSelect} />
+							<MapController onLocationSelect={handleLocationSelect} />
 
 							{weatherData && (
 								<Marker
@@ -241,35 +193,16 @@ export default function Page() {
 				<div className="xl:col-span-1">
 					{weatherData ? (
 						<div className="space-y-6">
-							<article className="bg-gradient-to-br from-cyan-600 via-blue-600 to-blue-700 rounded-2xl shadow-2xl p-6 text-white border border-cyan-500/20">
-								<div className="flex items-start justify-between mb-6">
-									<div>
-										<h3 className="text-2xl font-bold mb-2">
-											{weatherData.location.name}
-										</h3>
-										<p className="text-cyan-100 flex items-center gap-2 text-sm">
-											<MapPin className="w-4 h-4" aria-hidden="true" />
-											<span>{weatherData.location.country}</span>
-										</p>
-									</div>
-									<div className="text-right text-sm text-cyan-100 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
-										<div>{weatherData.location.latitude.toFixed(2)}°</div>
-										<div>{weatherData.location.longitude.toFixed(2)}°</div>
-									</div>
-								</div>
-								<div className="text-6xl font-bold mb-2">
-									{weatherData.temperature}°C
-								</div>
-								<p className="text-cyan-100 text-lg">Current Temperature</p>
-							</article>
-
+							<LocationStats
+								location={weatherData.location}
+								temperature={weatherData.temperature}
+							/>
 							<WeatherCard
 								temperature={weatherData.temperature}
 								humidity={weatherData.humidity}
 								windSpeed={weatherData.windSpeed}
 								precipitation={weatherData.precipitation}
 							/>
-
 							<AirQualityCard airQuality={weatherData.airQuality} />
 						</div>
 					) : (
