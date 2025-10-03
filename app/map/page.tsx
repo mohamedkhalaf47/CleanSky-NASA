@@ -1,15 +1,6 @@
 "use client";
-import "../leaflet/leaflet.css";
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
-import "leaflet-defaulticon-compatibility";
-import { useState } from "react";
-import {
-	MapContainer,
-	TileLayer,
-	Marker,
-	Popup,
-} from "react-leaflet";
-import L from "leaflet";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import {
 	getCurrentWeather,
@@ -22,20 +13,16 @@ import WeatherCard from "../../components/WeatherCard";
 import AirQualityCard from "../../components/AirQualityCard";
 import MapExplorerHeader from "@/components/map/MapExplorerHeader";
 import MapHeader from "@/components/map/MapHeader";
-import MapController from "@/components/map/MapController";
 import LocationStats from "@/components/map/LocationStats";
 
-interface ExtendedIconPrototype extends L.Icon.Default {
-	_getIconUrl?: string;
-}
-delete (L.Icon.Default.prototype as ExtendedIconPrototype)._getIconUrl;
-L.Icon.Default.mergeOptions({
-	iconRetinaUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-	iconUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-	shadowUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+// Dynamic import with SSR disabled
+const InteractiveMap = dynamic(() => import("@/components/map/InteractiveMap"), {
+	ssr: false,
+	loading: () => (
+		<div className="flex items-center justify-center bg-slate-800/30 rounded-lg" style={{ height: "700px" }}>
+			<div className="text-slate-400">Loading map...</div>
+		</div>
+	),
 });
 
 interface WeatherData {
@@ -55,8 +42,30 @@ export default function Page() {
 	const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [showGIBS, setShowGIBS] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
 
 	const today = new Date().toISOString().split("T")[0];
+
+	// Only run on client side
+	useEffect(() => {
+		setIsMounted(true);
+		
+		// Configure Leaflet icons only on client side
+		import("leaflet").then((L) => {
+			interface ExtendedIconPrototype extends L.Icon.Default {
+				_getIconUrl?: string;
+			}
+			delete (L.Icon.Default.prototype as ExtendedIconPrototype)._getIconUrl;
+			L.Icon.Default.mergeOptions({
+				iconRetinaUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+				iconUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+				shadowUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+			});
+		});
+	}, []);
 
 	const handleLocationSelect = async (lat: number, lng: number) => {
 		setIsLoading(true);
@@ -116,6 +125,17 @@ export default function Page() {
 		);
 	};
 
+	// Don't render map until client-side mounted
+	if (!isMounted) {
+		return (
+			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+				<div className="flex items-center justify-center min-h-screen">
+					<div className="text-slate-400">Loading...</div>
+				</div>
+			</main>
+		);
+	}
+
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 			<section className="bg-slate-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-slate-800/50">
@@ -141,52 +161,12 @@ export default function Page() {
 							isLoading={isLoading}
 						/>
 
-						<MapContainer
-							center={[20, 0]}
-							zoom={2}
-							scrollWheelZoom={true}
-							style={{ height: "700px", width: "100%" }}
-							className="z-0"
-						>
-							<TileLayer
-								attribution="&copy; OpenStreetMap"
-								url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-								maxZoom={19}
-							/>
-
-							{showGIBS && (
-								<TileLayer
-									attribution="NASA GIBS"
-									url={`https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${today}/250m/{z}/{y}/{x}.jpg`}
-									opacity={0.6}
-									maxZoom={9}
-								/>
-							)}
-
-							<MapController onLocationSelect={handleLocationSelect} />
-
-							{weatherData && (
-								<Marker
-									position={[
-										weatherData.location.latitude,
-										weatherData.location.longitude,
-									]}
-								>
-									<Popup>
-										<div className="text-center p-2">
-											<div className="font-bold text-lg mb-2">
-												{weatherData.location.name}
-											</div>
-											<div className="space-y-1 text-sm">
-												<div>{weatherData.temperature}°C</div>
-												<div>{weatherData.windSpeed} km/h</div>
-												<div>{weatherData.precipitation} mm</div>
-											</div>
-										</div>
-									</Popup>
-								</Marker>
-							)}
-						</MapContainer>
+						<InteractiveMap
+							showGIBS={showGIBS}
+							today={today}
+							weatherData={weatherData}
+							onLocationSelect={handleLocationSelect}
+						/>
 					</div>
 				</div>
 

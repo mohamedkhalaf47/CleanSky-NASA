@@ -1,9 +1,6 @@
 "use client";
-import "./leaflet/leaflet.css";
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
-import "leaflet-defaulticon-compatibility";
-import { useState } from "react";
-import L from "leaflet";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { CityInfo } from "../types/weather";
 import {
 	geocodeCity,
@@ -17,19 +14,18 @@ import WelcomeSection from "@/components/layout/WelcomeSection";
 import MapHeader from "@/components/map/MapHeader";
 import CityHeader from "@/components/weather/CityHeader";
 import ErrorAlert from "@/components/search/ErrorAlert";
-import MapView from "@/components/map/MapView";
 
-interface ExtendedIconPrototype extends L.Icon.Default {
-	_getIconUrl?: string;
-}
-delete (L.Icon.Default.prototype as ExtendedIconPrototype)._getIconUrl;
-L.Icon.Default.mergeOptions({
-	iconRetinaUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-	iconUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-	shadowUrl:
-		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+// Dynamic import with SSR disabled
+const MapView = dynamic(() => import("@/components/map/MapView"), {
+	ssr: false,
+	loading: () => (
+		<div
+			className="flex items-center justify-center bg-slate-800/30 rounded-lg"
+			style={{ height: "700px", width: "100%" }}
+		>
+			<div className="text-slate-400">Loading map...</div>
+		</div>
+	),
 });
 
 export default function Dashboard() {
@@ -41,8 +37,30 @@ export default function Dashboard() {
 	const [mapZoom, setMapZoom] = useState(2);
 	const [showGIBS, setShowGIBS] = useState(false);
 	const [mapKey, setMapKey] = useState(0);
+	const [isMounted, setIsMounted] = useState(false);
 
 	const today = new Date().toISOString().split("T")[0];
+
+	// Only run on client side
+	useEffect(() => {
+		setIsMounted(true);
+
+		// Configure Leaflet icons only on client side
+		import("leaflet").then((L) => {
+			interface ExtendedIconPrototype extends L.Icon.Default {
+				_getIconUrl?: string;
+			}
+			delete (L.Icon.Default.prototype as ExtendedIconPrototype)._getIconUrl;
+			L.Icon.Default.mergeOptions({
+				iconRetinaUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+				iconUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+				shadowUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+			});
+		});
+	}, []);
 
 	const searchCity = async (cityName: string) => {
 		if (!cityName.trim()) return;
@@ -102,6 +120,16 @@ export default function Dashboard() {
 			e.target.value = "";
 		}
 	};
+
+	if (!isMounted) {
+		return (
+			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+				<div className="flex items-center justify-center min-h-screen">
+					<div className="text-slate-400">Loading...</div>
+				</div>
+			</main>
+		);
+	}
 
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
