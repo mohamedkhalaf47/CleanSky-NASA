@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from "react";
 import {
 	MapContainer,
@@ -20,7 +20,10 @@ import { LocationData } from "../../types/weather";
 import WeatherCard from "../../components/WeatherCard";
 import AirQualityCard from "../../components/AirQualityCard";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+interface ExtendedIconPrototype extends L.Icon.Default {
+	_getIconUrl?: string;
+}
+delete (L.Icon.Default.prototype as ExtendedIconPrototype)._getIconUrl;
 L.Icon.Default.mergeOptions({
 	iconRetinaUrl:
 		"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
