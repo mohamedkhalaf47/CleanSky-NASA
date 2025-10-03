@@ -1,7 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-// import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Search, Cloud, MapPin, Satellite } from "lucide-react";
 import { CityInfo } from "../types/weather";

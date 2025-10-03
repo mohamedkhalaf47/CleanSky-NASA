@@ -7,7 +7,6 @@ import {
 	Popup,
 	useMapEvents,
 } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapPin, Download, Satellite } from "lucide-react";
 import {
