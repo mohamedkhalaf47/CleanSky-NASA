@@ -27,8 +27,8 @@ It integrates the **Open-Meteo API** for weather data and **NASA GIBS (Global Im
 ## 🛠️ Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org/)  
-- **Styling:** [TailwindCSS](https://tailwindcss.com/), [ShadCN/UI](https://ui.shadcn.com/)  
-- **State/Data Fetching:** Native React Hooks (no TanStack Query used)  
+- **Styling:** [TailwindCSS](https://tailwindcss.com/)  
+- **State/Data Fetching:** Native React Hooks 
 - **Maps & Geospatial Data:** [React-Leaflet](https://react-leaflet.js.org/)  
 - **APIs:**
   - 🌦️ [Open-Meteo API](https://open-meteo.com/) → Real-time & forecasted weather data  
