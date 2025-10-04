@@ -15,7 +15,6 @@ import MapExplorerHeader from "@/components/map/MapExplorerHeader";
 import MapHeader from "@/components/map/MapHeader";
 import LocationStats from "@/components/map/LocationStats";
 
-// Dynamic import with SSR disabled
 const InteractiveMap = dynamic(() => import("@/components/map/InteractiveMap"), {
 	ssr: false,
 	loading: () => (
@@ -46,11 +45,8 @@ export default function Page() {
 
 	const today = new Date().toISOString().split("T")[0];
 
-	// Only run on client side
 	useEffect(() => {
 		setIsMounted(true);
-		
-		// Configure Leaflet icons only on client side
 		import("leaflet").then((L) => {
 			interface ExtendedIconPrototype extends L.Icon.Default {
 				_getIconUrl?: string;
@@ -124,8 +120,6 @@ export default function Page() {
 			`weather-data-${weatherData.location.name}-${Date.now()}.csv`
 		);
 	};
-
-	// Don't render map until client-side mounted
 	if (!isMounted) {
 		return (
 			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">

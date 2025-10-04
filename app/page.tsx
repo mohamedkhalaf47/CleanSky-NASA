@@ -15,7 +15,6 @@ import MapHeader from "@/components/map/MapHeader";
 import CityHeader from "@/components/weather/CityHeader";
 import ErrorAlert from "@/components/search/ErrorAlert";
 
-// Dynamic import with SSR disabled
 const MapView = dynamic(() => import("@/components/map/MapView"), {
 	ssr: false,
 	loading: () => (
@@ -41,11 +40,9 @@ export default function Dashboard() {
 
 	const today = new Date().toISOString().split("T")[0];
 
-	// Only run on client side
 	useEffect(() => {
 		setIsMounted(true);
 
-		// Configure Leaflet icons only on client side
 		import("leaflet").then((L) => {
 			interface ExtendedIconPrototype extends L.Icon.Default {
 				_getIconUrl?: string;
