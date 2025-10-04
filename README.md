@@ -9,7 +9,7 @@
 
 **WeaZer Odds** is a web-based dashboard application that combines **live weather forecasts** with **real NASA satellite imagery** to provide users with a clear, accessible, and interactive way of exploring weather and environmental data.
 
-The project is built with **Next.js**, styled using **TailwindCSS & ShadCN UI**, and uses **React Leaflet** for map interactivity.  
+The project is built with **Next.js**, styled using **TailwindCSS**, and uses **React Leaflet** for map interactivity.  
 It integrates the **Open-Meteo API** for weather data and **NASA GIBS (Global Imagery Browse Services)** for satellite imagery.
 
 ---
